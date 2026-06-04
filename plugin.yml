@@ -1,0 +1,14 @@
+name: SkyGen-Core
+main: Core\Main
+api: 5.0.0
+version: 1.0.0
+description: "SkyGen-Core"
+author: NoMercy
+
+permissions:
+  admin.command:
+    default: op
+    description: "You don't have permission to use command"
+  player.command:
+    default: true
+    description: "You don't have permissions to use command"
