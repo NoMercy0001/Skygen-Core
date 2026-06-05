@@ -10,7 +10,8 @@ class Region {
         public readonly string $name,
         public readonly ?string $requiredRank, // null = spawn dla każdego
         public readonly Vector3 $min,
-        public readonly Vector3 $max
+        public readonly Vector3 $max,
+        public string $color = "white"
     ) {}
 
     public function isInside(Vector3 $pos): bool {

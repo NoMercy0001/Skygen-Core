@@ -21,7 +21,7 @@ final class GeneratorManager {
         private readonly GeneratorConfig $config
     ) {}
 
-    public function generateForIsland(Island $island, World $world): void {
+    public function generateForIsland(Island $island, World $world, bool $isAllowed): void {
         // 1. Pobrałem poziom wydajności (opcjonalnie wpływający na drop)
         $level = $this->upgradeManager->getUpgradeLevel($island->getOwnerUuid(), "efficiency");
 
@@ -31,8 +31,12 @@ final class GeneratorManager {
             return;
         }
 
-        // 3. Losuje blok na podstawie konfiguracji
-        $block = $this->getRandomBlockFromConfig();
+        if (!$isAllowed) {
+            $block = VanillaBlocks::STONE();
+        } else {
+            // 3. Losuje blok na podstawie konfiguracji
+            $block = $this->getRandomBlockFromConfig();
+        }
 
         // 4. Ustawiam blok w świecie w lokalizacji generatora
         $world->setBlock($island->getGeneratorPos(), $block);

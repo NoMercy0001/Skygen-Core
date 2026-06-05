@@ -35,7 +35,7 @@ class RegionManager {
             "name" => $region->name,
             "required_rank" => $region->requiredRank,
             "min_x" => $region->min->x, "min_y" => $region->min->y, "min_z" => $region->min->z,
-            "max_x" => $region->max->x, "max_y" => $region->max->y, "min_z" => $region->max->z
+            "max_x" => $region->max->x, "max_y" => $region->max->y, "max_z" => $region->max->z
         ]);
     }
 
@@ -44,5 +44,25 @@ class RegionManager {
             if ($region->isInside($pos)) return $region;
         }
         return null;
+    }
+
+    public function removeRegion(string $name): void {
+        if (isset($this->regions[$name])) {
+            unset($this->regions[$name]);
+            $this->db->executeGeneric("skygen.regions.delete", ["name" => $name]);
+        }
+    }
+
+    public function getAllRegions(): array {
+        return $this->regions;
+    }
+
+    public function canUseGenerator(string $playerRank, string $regionRank): bool {
+        $hierarchy = ["Gracz" => 0, "Vip" => 1, "SVip" => 2, "Sponsor" => 3, "Swagger" => 4, "Elite" => 5, "Admin" => 6];
+
+        $pVal = $hierarchy[$playerRank] ?? 0;
+        $rVal = $hierarchy[$regionRank] ?? 0;
+
+        return $pVal >= $rVal;
     }
 }

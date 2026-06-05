@@ -2,14 +2,20 @@
 
 namespace Core\Listeners;
 
-use Core\Managers\SkyGenManager;
+use Core\Main;
+use Core\Managers\GeneratorManager;
+use Core\Managers\IslandManager;
+use Core\Managers\RegionManager;
 use pocketmine\event\block\BlockFormEvent;
 use pocketmine\event\Listener;
 
-final class GeneratorListener implements Listener {
+final readonly class GeneratorListener implements Listener {
 
     public function __construct(
-        private readonly SkyGenManager $skyGenManager
+        private Main $plugin,
+        private IslandManager $islandManager,
+        private GeneratorManager $generatorManager,
+        private RegionManager $regionManager
     ) {}
 
     public function onBlockForm(BlockFormEvent $event): void {
@@ -18,19 +24,25 @@ final class GeneratorListener implements Listener {
         $world = $block->getPosition()->getWorld();
 
         // 2. Szukamy wyspy na tych kordynatach
-        $island = $this->skyGenManager->islandManager->getIslandAt($block->getPosition());
+        $island = $this->islandManager->getIslandAt($block->getPosition());
 
         if ($island === null) {
             return; // To nie jest wyspa, zostawiamy standardowe generowanie
         }
 
-        // 3. Decydujemy o rozwoju bloku na podstawie logiki SkyGen
-        $blockId = $this->skyGenManager->generatorManager->generateForIsland($island);
+        // 3. Sprawdzam rangę właściciela wyspy
+        $ownerUuid = $island->getOwnerUuid();
+        $rank = $this->plugin->getUsersConfig()->get($ownerUuid, "Gracz");
 
-        // 4. Podmieniamy blok (dla uproszczenia zwracamy ID, zamień na odpowiedni obiekt bloku)
-        // Jeśli generateForIsland zwraca np, ID bloku diamentu:
-        if ($blockId !== 1) { // 1 to Stone
-            $world->setBlock($block->getPosition(), $blockId);
-        }
+        // 4. Sprawdzam, czy wyspa jest w regionie
+        $region = $this->regionManager->getRegionAt($block->getPosition());
+
+        // Jeśli region istnieje, sprawdzam dostęp. Jeśli nie ma regionu - zakładam, że można generować.
+        $canUse = !($region !== null) || $this->regionManager->canUseGenerator($rank, $region->requiredRank);
+
+        // 4. Wywołuje generator z informacją, czy gracz ma dostęp do lepszego dropu
+        // GeneratorManager sam zajmie się postawieniem bloku w zależności od $canUse
+        $this->generatorManager->generateForIsland($island, $world, $canUse);
+        $event->cancel();
     }
 }

@@ -2,9 +2,11 @@
 
 namespace Core;
 
+use Core\Managers\CombatManager;
 use Core\Managers\EconomyManager;
 use Core\Managers\GeneratorManager;
 use Core\Managers\IslandManager;
+use Core\Managers\RegionManager;
 use Core\Managers\SkyGenManager;
 use Core\Managers\UpgradeManager;
 use pocketmine\plugin\PluginBase;
@@ -18,6 +20,8 @@ final class Container {
     public readonly EconomyManager $economyManager;
     public readonly GeneratorManager $generatorManager;
     public readonly SkyGenManager $skyGenManager;
+    public readonly CombatManager $combatManager;
+    public readonly RegionManager $regionManager;
 
     private DataConnector $databaseConnector;
 
@@ -32,6 +36,8 @@ final class Container {
 
         // 2. Inicjalizacja prostych managerów (nie mają zależności)
         $this->islandManager = new IslandManager($this->databaseConnector);
+        $this->combatManager = new CombatManager();
+        $this->regionManager = new RegionManager();
         $this->upgradeManager = new UpgradeManager();
         $this->economyManager = new EconomyManager();
 

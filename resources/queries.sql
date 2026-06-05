@@ -75,3 +75,10 @@ SELECT * FROM regions;
 REPLACE INTO regions (name, required_rank, min_x, min_y, min_z, max_x, max_y, max_z) VALUES (:name, :required_rank, :min_x, :min_y, :min_z, :max_x, :max_y, :max_z);
 -- # }
 -- # }
+
+-- # { delete
+-- # :name string
+-- # {
+DELETE FROM regions WHERE name = :name;
+-- # }
+-- # }
