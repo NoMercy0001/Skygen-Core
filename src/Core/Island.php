@@ -2,6 +2,48 @@
 
 namespace Core;
 
-class Island {
+use pocketmine\math\Vector3;
 
+final class Island {
+
+    /**
+     * @param string $ownerUuid UUID właściciela wyspy
+     * @param int $level Poziom wyspy
+     * @param Vector3 $center Punkt środkowy wyspy
+     */
+
+    private Vector3 $generatorPos;
+
+    public function __construct(
+        private readonly string $ownerUuid,
+        private int $level,
+        private readonly Vector3 $center,
+        Vector3 $generatorPos
+    ) {
+        $this->generatorPos = $generatorPos;
+    }
+
+    public function getGeneratorPos(): Vector3 {
+        return $this->generatorPos;
+    }
+
+    public function setGeneratorPos(Vector3 $pos): void {
+        $this->generatorPos = $pos;
+    }
+
+    public function getOwnerUuid(): string {
+        return $this->ownerUuid;
+    }
+
+    public function getLevel(): int {
+        return $this->level;
+    }
+
+    public function setLevel(int $level): void {
+        $this->level = $level;
+    }
+
+    public function getCenter(): Vector3 {
+        return $this->center;
+    }
 }

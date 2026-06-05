@@ -1,0 +1,18 @@
+-- # !
+-- # { skygen
+-- #   { load_islands
+-- #     SELECT ownerUuid, level, x,y,z, gen_x, gen_y, gen_z FROM islands;
+-- #   }
+-- # }
+
+-- # { save_island
+-- # :ownerUuid string
+-- # :level int
+-- # :x int
+-- # :y int
+-- # :z int
+-- # :gen_x int
+-- # :gen_y int
+-- # :gen_z int
+-- # REPLACE INTO islands (owner_uuid, level, x, y, z, gen_x, gen_y, gen_z) VALUES (:ownerUuid, :level, :x, :y, :z, :gen_x, :gen_y, :gen_z);
+-- # }

@@ -1,6 +1,8 @@
 name: SkyGen-Core
 main: Core\Main
 api: 5.0.0
+depend:
+  - libasynql
 version: 1.0.0
 description: "SkyGen-Core"
 author: NoMercy
