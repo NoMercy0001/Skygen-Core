@@ -9,6 +9,7 @@ use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\math\Vector3;
 use pocketmine\world\World;
+use poggit\libasynql\DataConnector;
 
 final class GeneratorManager {
 
@@ -87,6 +88,12 @@ final class GeneratorManager {
             // Stawianie bloku w świecie
             $world->setBlock($pos->add(0, 1, 0), $block);
         }
+
+        /** @var IslandManager $islandManager */
+        foreach ($this->islandManager->getAllIslands() as $allIsland) {
+            // Logika generowania:
+            $this->generateForIsland($allIsland, $world);
+        }
     }
 
     public function getBlockForType(string $type, int $level): Block {
@@ -98,5 +105,23 @@ final class GeneratorManager {
             "netherite" => VanillaBlocks::NETHERITE(),
             default => VanillaBlocks::STONE()
             };
+        }
+
+        public function loadGenerators(DataConnector $dataConnector,IslandManager $islandManager): void {
+            $dataConnector->executeSelect("skygen.generators.load_all", [], function (array $rows) use ($islandManager) {
+                foreach ($rows as $row) {
+                    $island = $islandManager->getIslandByUuid($row["island_uuid"]);
+                    if ($island !== null) {
+                        $gen = new Generator(
+                          $row["type"],
+                          (int)$row["level"],
+                          new Vector3($row["x"], $row["y"], $row["z"]),
+                          $row["island_uuid"],
+                        );
+                        $this->generators[] = $gen;
+                        $island->addGenerator($gen);
+                    }
+                }
+            });
         }
     }

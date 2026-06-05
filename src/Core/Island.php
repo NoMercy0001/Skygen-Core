@@ -14,6 +14,9 @@ final class Island {
 
     private Vector3 $generatorPos;
 
+    /** @var Generator[] */
+    private array $generators = [];
+
     public function __construct(
         private readonly string $ownerUuid,
         private int $level,
@@ -45,5 +48,25 @@ final class Island {
 
     public function getCenter(): Vector3 {
         return $this->center;
+    }
+
+    public function addGenerator(Generator $generator): void {
+        $this->generators[] = $generator;
+    }
+
+    /**
+     * @return Generator[]
+     */
+    public function getGenerators(): array {
+        return $this->generators;
+    }
+
+    public function removeGenerator(Generator $generator): void {
+        foreach ($this->generators as $key => $gen) {
+            if ($gen === $generator) {
+                unset($this->generators[$key]);
+                break;
+            }
+        }
     }
 }

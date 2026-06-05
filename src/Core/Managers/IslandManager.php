@@ -39,9 +39,9 @@ final class IslandManager {
         return null;
     }
 
-    public function loadAllIslandsFromDatabase(): void {
+    public function loadAllIslandsFromDatabase(?callable $onComplete = null): void {
         // 1. Pobieram dane z bazy
-        $this->databaseConnector->executeSelect("skygen.load_islands", [], function(array $rows) {
+        $this->databaseConnector->executeSelect("skygen.load_islands", [], function(array $rows) use ($onComplete) {
             foreach ($rows as $row) {
                 // Tworzę Vector3 dla środka wyspy
                 $center = new Vector3((int)$row['x'], (int)$row['y'], (int)$row['z']);
@@ -56,6 +56,10 @@ final class IslandManager {
                     $center,
                     $genPos
                 );
+            }
+
+            if ($onComplete !== null) {
+                $onComplete();
             }
         });
     }
@@ -78,5 +82,9 @@ final class IslandManager {
 
     public function getAllIslands(): array {
         return $this->islands;
+    }
+
+    public function getIslandByUuid(string $uuid): ?Island {
+        return $this->islands[$uuid] ?? null;
     }
 }
