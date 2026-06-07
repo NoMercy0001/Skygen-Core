@@ -12,7 +12,7 @@ class CombatManager {
 
     public function setCombatTag(Player $player): void {
         $this->combatTags[$player->getName()] = time() + $this->combatDuration;
-        $player->sendMessage("Jesteś podczas walki! Nie możesz wejść na bezpieczne strefy i spawn!");
+        $player->sendMessage("Jesteś podczas walki! Nie możesz wejść na bezpieczne strefy.");
     }
 
     public function isTagged(Player $player): bool {

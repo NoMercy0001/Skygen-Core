@@ -12,6 +12,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
@@ -22,6 +23,8 @@ class RegionListener implements Listener {
     public array $pos1 = [];
     public array $pos2 = [];
 
+    private array $viewingBarrier = [];
+
     public function __construct(
         private readonly Main $plugin,
         private readonly RegionManager $regionManager,
@@ -30,6 +33,7 @@ class RegionListener implements Listener {
 
     public function onMove(PlayerMoveEvent $event): void {
         $player = $event->getPlayer();
+        $name = $player->getName();
         $to = $event->getTo();
         $region = $this->regionManager->getRegionAt($to);
 
@@ -39,19 +43,29 @@ class RegionListener implements Listener {
             if ($isTagged && $region->name === "Spawn") {
                 $event->cancel();
                 $player->sendTip("Nie możesz wejść na spawn podczas walki!");
-                $this->showGlassBarrier($player, $region);
+
+                if (!isset($this->viewingBarrier[$name])) {
+                    $this->showGlassBarrier($player, $region);
+                    $this->viewingBarrier[$name] = true;
+                }
                 return;
             }
         }
 
         if ($region !== null && $region->requiredRank !== null) {
             if (!$this->hasRequireRank($player, $region->requiredRank)) {
-                $this->showGlassBarrier($player, $region);
-                $event->getPlayer()->sendTitle("");
+                if (!isset($this->viewingBarrier[$name])) {
+                    $this->showGlassBarrier($player, $region);
+                    $this->viewingBarrier[$name] = true;
+                }
+                $player->sendTitle("Odmowa!");
                 $event->cancel();
             } else {
+                unset($this->viewingBarrier[$name]);
                 $this->sendRegionEffect($player, $region);
             }
+        } else {
+            unset($this->viewingBarrier[$name]);
         }
     }
 
@@ -115,5 +129,9 @@ class RegionListener implements Listener {
 
     private function sendRegionEffect(Player $player, Region $region): void {
         $player->sendTip("Witaj w strefie: " . $region->name);
+    }
+
+    public function onQuit(PlayerQuitEvent $event): void {
+        unset($this->viewingBarrier[$event->getPlayer()->getName()]);
     }
 }
