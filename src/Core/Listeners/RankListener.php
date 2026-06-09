@@ -3,6 +3,7 @@
 namespace Core\Listeners;
 
 use Core\Main;
+use Core\Managers\RankManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -10,26 +11,17 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\chat\StandardChatFormatter;
 use pocketmine\scheduler\ClosureTask;
 
-class RankListener implements Listener {
+readonly class RankListener implements Listener {
 
-    private Main $plugin;
-
-    public function __construct(Main $plugin) {
-        $this->plugin = $plugin;
-    }
+    public function __construct(private RankManager $rankManager, private Main $plugin) {}
 
     public function onJoin(PlayerJoinEvent $event) : void {
         $player = $event->getPlayer();
-        $users = $this->plugin->getUsersConfig();
-
-        if (!$users->exists($player->getName())) {
-            $users->set($player->getName(),"Gracz");
-            $users->save();
-        }
+        $this->rankManager->ensureUserExists($player->getName());
 
         $this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player): void {
             if ($player->isOnline()) {
-                $this->plugin->applyRank($player);
+                $this->rankManager->applyRank($player);
             }
         }),
             10
@@ -37,7 +29,7 @@ class RankListener implements Listener {
     }
 
     public function onQuit(PlayerQuitEvent $event) : void {
-        $this->plugin->unregisterAttachment($event->getPlayer());
+        $this->rankManager->unregisterAttachment($event->getPlayer());
     }
 
     public function onChat(PlayerChatEvent $event) : void {

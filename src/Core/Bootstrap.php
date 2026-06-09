@@ -9,23 +9,18 @@ use Core\Listeners\RegionListener;
 use Core\Tasks\AutoSaveTask;
 use Core\Tasks\GeneratorTickTask;
 use Core\Tasks\IslandScanTask;
-use pocketmine\plugin\PluginBase;
 
 final readonly class Bootstrap {
 
     public function __construct(
-        private PluginBase $plugin,
+        private Main $plugin,
         private Container  $container
     ) {}
 
     public function registerManagers(): void {
-        // 1. Wczytywanie konfiguracji z pliku config.yml
-        $config = $this->plugin->getConfig();
-
-        // 2. Wczytywanie danych z bazy/pliku do IslandManagera innych managerow.
+        // 1. Wczytywanie danych z bazy/pliku do IslandManagera innych managerow.
         $this->container->islandManager->loadAllIslandsFromDatabase();
         $this->container->regionManager->loadRegionsFromDatabase();
-
     }
 
     public function registerListeners(): void {
@@ -35,13 +30,13 @@ final readonly class Bootstrap {
             $this->plugin
         );
         $this->plugin->getServer()->getPluginManager()->registerEvents(
-            new RegionListener($this->plugin, $this->container->regionManager, $this->container->combatManager), $this->plugin
+            new RegionListener($this->plugin, $this->container->regionManager, $this->container->combatManager, $this->container->config, $this->container->rankManager), $this->plugin
         );
         $this->plugin->getServer()->getPluginManager()->registerEvents(
             new CombatListener($this->container->combatManager), $this->plugin
         );
         $this->plugin->getServer()->getPluginManager()->registerEvents(
-          new RankListener($this->plugin), $this->plugin
+          new RankListener($this->container->rankManager, $this->plugin), $this->plugin
         );
     }
 

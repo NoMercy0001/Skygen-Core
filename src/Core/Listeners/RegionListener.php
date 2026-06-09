@@ -2,8 +2,10 @@
 
 namespace Core\Listeners;
 
+use Core\GeneratorConfig;
 use Core\Main;
 use Core\Managers\CombatManager;
+use Core\Managers\RankManager;
 use Core\Managers\RegionManager;
 use Core\Regions\Region;
 use pocketmine\block\utils\DyeColor;
@@ -28,7 +30,9 @@ class RegionListener implements Listener {
     public function __construct(
         private readonly Main $plugin,
         private readonly RegionManager $regionManager,
-        private readonly CombatManager $combatManager
+        private readonly CombatManager $combatManager,
+        private readonly GeneratorConfig $config,
+        private readonly RankManager $rankManager
     ) {}
 
     public function onMove(PlayerMoveEvent $event): void {
@@ -38,6 +42,13 @@ class RegionListener implements Listener {
         $region = $this->regionManager->getRegionAt($to);
 
         if ($region !== null) {
+            $required = $this->config->getRequiredRank($region->name);
+            $playerRank = $this->rankManager->getPlayerRank($player);
+
+            if (!$this->config->canEnter($playerRank, $region->name)) {
+             $player->sendMessage("Nie posiadasz rangi " . $required . " aby wejść tutaj!");
+             $event->cancel();
+            }
             $isTagged = $this->combatManager->isTagged($player);
 
             if ($isTagged && $region->name === "Spawn") {
